@@ -13,6 +13,7 @@
 
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
 
 
 struct ShaderProgramSource{
@@ -153,35 +154,13 @@ int main(void)
             2, 3, 0
         };
 
-        /****************************************************************
-        =============================VAO=================================
-        *****************************************************************/
-        unsigned int vao;
-        GLCall(glGenVertexArrays(1, &vao));
-        GLCall(glBindVertexArray(vao));
-
-        /****************************************************************
-        =============================VBO=================================
-        *****************************************************************/
+        VertexArray va;
 
         VertexBuffer vb(positions, 3 * 4 * sizeof(float));
 
-        //Enables the vertex attribute array that we define just below
-        GLCall(glEnableVertexAttribArray(0)); //index of the vertex we want to enabl)e
-
-        /*For each vertex, we only have 1 attribute: a position, so bind it to the index 0 and only neew to
-          call the function once.*/
-        GLCall(glVertexAttribPointer(0, //index at which we can find the first position
-            3, //number of elements that make a position
-            GL_FLOAT, //Type of the elements that constitutes our attribute
-            GL_FALSE, //whether we want them to be normalized or not by openGL
-            3 * sizeof(float), //How many bytes is between 2 vertices, the stride.
-            0 // pointer to the next attribute. there is none so we can put 0.
-        ));
-
-        /****************************************************************
-        =============================IBO=================================
-        *****************************************************************/
+        VertexBufferLayout layout;
+        layout.Push<float>(3);
+        va.AddBuffer(vb, layout);
 
         IndexBuffer ib(indices, 6);
 
@@ -224,7 +203,7 @@ int main(void)
             //Giving the location and value, we are setting the uniform
             GLCall(glUniform4f(location, r, g, b, 1.0f));
 
-            GLCall(glBindVertexArray(vao));
+           va.Bind();
             ib.Bind();
 
             //when we only had a vbo, the call was glDrafArrays(GL_TRIANGLES, 0, 6)
